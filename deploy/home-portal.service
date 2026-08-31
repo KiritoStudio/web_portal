@@ -1,0 +1,49 @@
+[Unit]
+Description=Home Portal — LAN link dashboard
+Documentation=https://github.com/kirito/home-portal
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/opt/home-portal/HomePortal
+WorkingDirectory=/opt/home-portal
+Environment=PORT=80
+Environment=DOTNET_EnableDiagnostics=0
+# The connection string carries a password, so it lives in a mode 600 file; this unit is
+# world-readable and must not hold it
+EnvironmentFile=/etc/home-portal.env
+
+# All data is in PostgreSQL, so this service never writes anything locally — not even a
+# StateDirectory is needed, just a throwaway user to run as
+DynamicUser=yes
+
+Restart=on-failure
+RestartSec=3
+
+# 80 is privileged and an unprivileged user cannot bind it. Grant this one capability
+# rather than running the whole service as root
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# This service only needs to listen on one port and reach the database; lock down the rest
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+# WARNING: AF_UNIX must stay — the Type=notify readiness message travels over a Unix
+# socket. Drop it and the service starts and listens but cannot report ready, so systemd
+# waits for the timeout and then kills it
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+LockPersonality=yes
+# WARNING: the .NET JIT needs pages that are both writable and executable; turning this
+# on stops the service from starting at all
+MemoryDenyWriteExecute=no
+
+[Install]
+WantedBy=multi-user.target

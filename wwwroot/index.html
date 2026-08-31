@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Home Portal</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="logo">
+    <div class="m">H</div>
+    <div><b>Home Portal</b><small id="stat">Loading…</small></div>
+  </div>
+
+  <div class="find">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+    <input id="q" type="search" placeholder="Search names, addresses, groups" aria-label="Search">
+  </div>
+
+  <div class="seg" role="group" aria-label="View">
+    <button id="v-flat" aria-pressed="true">All</button>
+    <button id="v-group" aria-pressed="false">By group</button>
+  </div>
+
+  <button class="btn" id="add">＋ Add</button>
+
+  <div class="menu-wrap">
+    <button class="btn ghost icon" id="more" aria-label="More" aria-expanded="false">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="8" cy="13" r="1.4"/></svg>
+    </button>
+    <div class="menu" id="menu" hidden>
+      <button type="button" data-menu="export">Export config</button>
+      <button type="button" data-menu="import">Import config</button>
+    </div>
+  </div>
+</header>
+
+<main class="canvas" id="canvas"></main>
+
+<input type="file" id="file" accept="application/json,.json" hidden>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="stitle">
+    <h2 id="stitle">Add a link</h2>
+    <form class="form" id="form">
+      <div class="field">
+        <label for="f-name">Display name</label>
+        <input id="f-name" maxlength="64" required placeholder="Synology DSM">
+      </div>
+      <div class="field">
+        <label for="f-url">Address</label>
+        <input id="f-url" required placeholder="http://192.168.1.10:5000">
+        <div class="hint">An IP or a LAN hostname — saved and opened exactly as you type it.</div>
+      </div>
+      <div class="field">
+        <label for="f-group">Group</label>
+        <input id="f-group" maxlength="64" autocomplete="off" placeholder="Leave empty for ungrouped">
+        <div class="chips" id="chips"></div>
+        <div class="hint">Pick one above, or type a new name — it gets created when you save.</div>
+      </div>
+      <p class="err" id="err" hidden></p>
+      <div class="acts">
+        <button type="button" class="btn ghost" id="cancel">Cancel</button>
+        <button type="submit" class="btn" id="save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden><span id="tmsg"></span><button id="taction" type="button"></button></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

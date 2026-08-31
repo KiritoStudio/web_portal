@@ -1,0 +1,6 @@
+bin/
+obj/
+out/
+deploy/publish.sh
+deploy/home-portal.env
+.DS_Store
