@@ -551,6 +551,19 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   gq.focus();
 }
 
+const isMac = /mac/i.test(navigator.platform || navigator.userAgent);
+gq.title = `Search Google (${isMac ? '⌘K' : 'Ctrl+K'})`;
+
+// Cmd+K / Ctrl+K jumps back here from anywhere on the page.
+document.addEventListener('keydown', (event) => {
+  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return;
+  // While the edit sheet is open, focus belongs to it: the box is behind the scrim.
+  if (!scrim.hidden) return;
+  event.preventDefault();
+  gq.focus();
+  gq.select();   // whatever was there is ready to be typed over
+});
+
 const menu = $('menu');
 $('more').addEventListener('click', (event) => {
   event.stopPropagation();
