@@ -19,9 +19,24 @@
     <div><b>Home Portal</b><small id="stat">Loading…</small></div>
   </div>
 
+  <form class="gsearch" action="https://www.google.com/search" method="get" target="_blank" rel="noopener" role="search">
+    <span class="glogo" aria-hidden="true">
+      <svg width="17" height="17" viewBox="0 0 48 48">
+        <path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2.1 5-4.4 6.6v5.500h7.1c4.2-3.8 6.6-9.5 6.6-16.1z"/>
+        <path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.6-3.9-12.4-9.1H4.3v5.7C7.9 41 15.4 46 24 46z"/>
+        <path fill="#FBBC05" d="M11.6 28.1c-.4-1.3-.7-2.7-.7-4.1s.2-2.8.7-4.1v-5.7H4.3C2.8 17.1 2 20.4 2 24s.8 6.9 2.3 9.8l7.3-5.7z"/>
+        <path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.3 30 2 24 2 15.4 2 7.9 7 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/>
+      </svg>
+    </span>
+    <input type="text" name="q" id="gq" placeholder="Search Google" aria-label="Search Google" autocomplete="off">
+    <button type="button" class="gclear" id="gclear" aria-label="Clear" hidden>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+    </button>
+  </form>
+
   <div class="find">
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
-    <input id="q" type="search" placeholder="Search names, addresses, groups" aria-label="Search">
+    <input id="q" type="search" placeholder="Search links" aria-label="Search links on this page">
   </div>
 
   <div class="seg" role="group" aria-label="View">

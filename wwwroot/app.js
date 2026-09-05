@@ -521,6 +521,24 @@ search.addEventListener('keydown', (event) => {
   if (first) first.click();
 });
 
+// The Google box submits as a plain form, so search works even if this script fails;
+// this only drives the clear button.
+const gq = $('gq');
+const gclear = $('gclear');
+gq.addEventListener('input', () => { gclear.hidden = !gq.value; });
+gclear.addEventListener('click', () => {
+  gq.value = '';
+  gclear.hidden = true;
+  gq.focus();
+});
+
+// The cursor starts in the Google box, the way a search page behaves. Not on touch
+// devices though: autofocus there throws up the soft keyboard over half the screen
+// before anyone asked for it, and on a phone this page is opened to tap a link.
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  gq.focus();
+}
+
 const menu = $('menu');
 $('more').addEventListener('click', (event) => {
   event.stopPropagation();

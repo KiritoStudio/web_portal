@@ -7,6 +7,7 @@
   --accent:#CF4227; --accent-hot:#E4573F; --accent-soft:#FBE7E1; --on-accent:#FFFFFF;
   --off:#9C9AAC;
   --glow:rgba(207,66,39,.10); --grid:rgba(20,19,26,.05);
+  --g-lift:0 1px 6px rgba(32,33,36,.28);
   --rim:inset 0 1px 0 rgba(255,255,255,.75);
   --lift:0 1px 2px rgba(20,19,26,.05), 0 14px 34px -20px rgba(20,19,26,.35);
 
@@ -25,6 +26,7 @@
     --accent:#F0705A; --accent-hot:#FF8570; --accent-soft:#2E1B18; --on-accent:#1A0D0A;
     --off:#5C5A6C;
     --glow:rgba(240,112,90,.14); --grid:rgba(255,255,255,.035);
+    --g-lift:0 1px 6px rgba(0,0,0,.65);
     --rim:inset 0 1px 0 rgba(255,255,255,.045);
     --lift:0 1px 2px rgba(0,0,0,.5), 0 18px 40px -24px rgba(0,0,0,.9);
     --g-l:22%; --g-s:32%; --g-tl:72%; --g-ts:48%; --g-dot:62%;
@@ -57,12 +59,28 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   background:color-mix(in srgb, var(--surface-2) 88%, transparent);
   backdrop-filter:blur(10px);
 }
-.logo{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo{display:flex;align-items:center;gap:10px}
 .logo .m{width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:15px;box-shadow:0 4px 12px -4px var(--glow)}
 .logo b{display:block;font-family:var(--disp);font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
 .logo small{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
 
-.find{position:relative;flex:1 1 200px;max-width:280px}
+/* Google box: kept visually distinct from the portal's own search so the two are
+   never confused — pill shape, brand mark, and the lift Google's own box uses */
+.gsearch{
+  flex:1 1 220px;max-width:420px;margin-right:auto;
+  display:flex;align-items:center;gap:11px;height:38px;padding:0 14px;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:100px;
+  transition:box-shadow .15s,border-color .15s;
+}
+.gsearch:hover,.gsearch:focus-within{box-shadow:var(--g-lift);border-color:transparent}
+.gsearch .glogo{flex:none;display:grid;place-items:center}
+.gsearch input{flex:1;min-width:0;border:0;background:none;outline:none;font:inherit;font-size:14px;color:var(--ink)}
+.gsearch input::placeholder{color:var(--faint)}
+.gclear{flex:none;width:22px;height:22px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--faint);cursor:pointer}
+.gclear:hover{background:var(--sunk);color:var(--ink)}
+.gclear[hidden]{display:none}
+
+.find{position:relative;flex:0 1 190px;max-width:190px}
 .find input{width:100%;padding:8px 12px 8px 32px;font:inherit;font-size:13.5px;color:var(--ink);background:var(--sunk);border:1px solid transparent;border-radius:9px;outline:none;transition:.15s}
 .find input::placeholder{color:var(--faint)}
 .find input:focus{border-color:var(--accent);background:var(--surface)}
@@ -198,7 +216,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 
 @media (max-width:560px){
   .bar{padding:12px 16px;gap:10px}
-  .find{max-width:none;order:3;flex-basis:100%}
+  /* Narrow screens: both search fields get a row of their own */
+  .gsearch{order:3;flex-basis:100%;max-width:none;margin-right:0}
+  .find{order:4;flex-basis:100%;max-width:none}
   .canvas{padding:18px 16px 60px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
