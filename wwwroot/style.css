@@ -7,6 +7,7 @@
   --accent:#CF4227; --accent-hot:#E4573F; --accent-soft:#FBE7E1; --on-accent:#FFFFFF;
   --off:#9C9AAC;
   --glow:rgba(207,66,39,.10); --grid:rgba(20,19,26,.05);
+  --focus-line:#A8A4B8;
   --rim:inset 0 1px 0 rgba(255,255,255,.75);
   --lift:0 1px 2px rgba(20,19,26,.05), 0 14px 34px -20px rgba(20,19,26,.35);
 
@@ -25,6 +26,7 @@
     --accent:#F0705A; --accent-hot:#FF8570; --accent-soft:#2E1B18; --on-accent:#1A0D0A;
     --off:#5C5A6C;
     --glow:rgba(240,112,90,.14); --grid:rgba(255,255,255,.035);
+    --focus-line:#4E5567;
     --rim:inset 0 1px 0 rgba(255,255,255,.045);
     --lift:0 1px 2px rgba(0,0,0,.5), 0 18px 40px -24px rgba(0,0,0,.9);
     --g-l:22%; --g-s:32%; --g-tl:72%; --g-ts:48%; --g-dot:62%;
@@ -47,6 +49,9 @@ body::before{
 }
 h1,h2{margin:0;font-family:var(--disp);letter-spacing:-.02em}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* The two top-bar fields already show focus by turning white with a border; a brand-red
+   ring on top of that is loud, and one of them is focused the moment the page opens. */
+.gsearch input:focus-visible,.find input:focus-visible{outline-color:var(--focus-line)}
 
 /* ------------------------------------------------------------ Top bar */
 .bar{
@@ -70,7 +75,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   background:var(--sunk);border:1px solid transparent;border-radius:9px;
   transition:.15s;
 }
-.gsearch:focus-within{border-color:var(--accent);background:var(--surface)}
+.gsearch:focus-within{border-color:var(--focus-line);background:var(--surface)}
 .gsearch .glogo{flex:none;display:grid;place-items:center}
 .gsearch input{flex:1;min-width:0;border:0;background:none;outline:none;font:inherit;font-size:13.5px;color:var(--ink)}
 .gsearch input::placeholder{color:var(--faint)}
@@ -81,7 +86,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .find{position:relative;flex:0 1 190px;max-width:190px}
 .find input{width:100%;padding:8px 12px 8px 32px;font:inherit;font-size:13.5px;color:var(--ink);background:var(--sunk);border:1px solid transparent;border-radius:9px;outline:none;transition:.15s}
 .find input::placeholder{color:var(--faint)}
-.find input:focus{border-color:var(--accent);background:var(--surface)}
+.find input:focus{border-color:var(--focus-line);background:var(--surface)}
 .find svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint)}
 
 .seg{display:flex;gap:2px;background:var(--sunk);border-radius:9px;padding:3px}
