@@ -532,6 +532,15 @@ gclear.addEventListener('click', () => {
   gq.focus();
 });
 
+// The clear button is out of the tab order (tabindex="-1") so that Tab goes straight
+// from here to the portal's own search. Escape is the keyboard equivalent of clicking it.
+gq.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && gq.value) {
+    gq.value = '';
+    gclear.hidden = true;
+  }
+});
+
 // The cursor starts in the Google box, the way a search page behaves. Not on touch
 // devices though: autofocus there throws up the soft keyboard over half the screen
 // before anyone asked for it, and on a phone this page is opened to tap a link.
