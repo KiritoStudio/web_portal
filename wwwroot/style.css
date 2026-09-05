@@ -99,7 +99,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   padding:7px 10px;border-radius:7px;font-size:13.5px;color:var(--ink);cursor:pointer;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.gsuggest li:hover,.gsuggest li[aria-selected="true"]{background:var(--sunk)}
+/* One highlight, wherever the selection currently is. The pointer moves the selection
+   rather than lighting a second row of its own: two rows lit in the same colour, one of
+   them following the mouse and one the keyboard, reads as the selection being stuck. */
+.gsuggest li[aria-selected="true"]{background:var(--sunk)}
 /* The part you have not typed yet is the suggestion proper; show it as the softer half. */
 .gsuggest li b{font-weight:400;color:var(--muted)}
 

@@ -605,6 +605,8 @@ function drawSuggestions(typed) {
     } else {
       li.textContent = text;
     }
+    // The pointer takes the selection with it, so there is never a second row lit
+    li.addEventListener('mouseenter', () => highlight(i));
     // mousedown, not click: blur fires first on click and would close the list
     li.addEventListener('mousedown', (event) => {
       event.preventDefault();
