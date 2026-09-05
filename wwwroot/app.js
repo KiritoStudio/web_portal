@@ -667,6 +667,18 @@ gq.addEventListener('keydown', (event) => {
 
 gq.addEventListener('blur', () => setTimeout(closeSuggestions, 120));
 
+// A search is done with once it has been sent, and the results open in another tab, so
+// leave this field empty for the next one. The clearing is deferred: the form data is
+// collected after the submit event, and emptying the field inline would search for
+// nothing at all.
+gq.closest('form').addEventListener('submit', () => {
+  setTimeout(() => {
+    gq.value = '';
+    gclear.hidden = true;
+    closeSuggestions();
+  }, 0);
+});
+
 // The cursor starts in the Google box, the way a search page behaves. Not on touch
 // devices though: autofocus there throws up the soft keyboard over half the screen
 // before anyone asked for it, and on a phone this page is opened to tap a link.
