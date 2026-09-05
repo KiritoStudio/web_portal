@@ -708,6 +708,11 @@ gq.addEventListener('keydown', (event) => {
   if (!typed || /\s/.test(typed)) return;
   event.preventDefault();   // otherwise the form submits a search on top of this
   window.open(asAddress(typed), '_blank', 'noopener,noreferrer');
+  // Spent, exactly like a submitted search. No deferral needed here: the address was
+  // read into `typed` before this line, and no form data is collected on this path.
+  gq.value = '';
+  gclear.hidden = true;
+  closeSuggestions();
 });
 
 // Cmd+K / Ctrl+K jumps back here from anywhere on the page.
