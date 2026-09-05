@@ -100,7 +100,10 @@ function inPinnedOrder(list) {
 
 function cardHtml(site, index) {
   const tip = `${site.group ? site.group + ' · ' : ''}opened ${clicksOf(site.id)} times`;
-  return `<a class="card" href="${esc(site.url)}" target="_blank" rel="noopener"
+  // noreferrer as well as noopener: several LAN services (qBittorrent's WebUI among them)
+  // reject requests carrying a foreign Referer as cross-site, answering Unauthorized.
+  // It also keeps the portal's own address from leaking to whatever is being opened.
+  return `<a class="card" href="${esc(site.url)}" target="_blank" rel="noopener noreferrer"
     data-id="${site.id}" title="${esc(tip)}"
     style="${styleOf(site.group)}animation-delay:${Math.min(index * 18, 260)}ms">
     <span class="ico">${esc(site.name.slice(0, 1))}</span>
