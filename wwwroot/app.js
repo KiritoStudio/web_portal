@@ -554,6 +554,25 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
 const isMac = /mac/i.test(navigator.platform || navigator.userAgent);
 gq.title = `Search Google (${isMac ? '⌘K' : 'Ctrl+K'})`;
 
+/**
+ * What a browser's address bar does with Ctrl+Enter: a bare word becomes www.<word>.com.
+ * Anything that already reads as an address is opened as it stands rather than wrapped.
+ */
+function asAddress(text) {
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return text;
+  if (text.includes('.') || text.includes('/')) return 'https://' + text;
+  return 'https://www.' + text + '.com';
+}
+
+gq.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
+  const typed = gq.value.trim();
+  // Several words are a search phrase, not a hostname; leave those to plain Enter.
+  if (!typed || /\s/.test(typed)) return;
+  event.preventDefault();   // otherwise the form submits a search on top of this
+  window.open(asAddress(typed), '_blank', 'noopener,noreferrer');
+});
+
 // Cmd+K / Ctrl+K jumps back here from anywhere on the page.
 document.addEventListener('keydown', (event) => {
   if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return;
