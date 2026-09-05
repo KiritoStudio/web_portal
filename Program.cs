@@ -423,7 +423,13 @@ public static class Program
         }));
 
         app.UseDefaultFiles();
-        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            // Without this a browser keeps serving a stale style.css after a deploy, which
+            // shows up as the new markup wearing the old styling. no-cache still caches;
+            // it only forces revalidation, so an unchanged file costs a 304.
+            OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache"
+        });
 
         MapApi(app, db);
 
