@@ -16,7 +16,7 @@
 <header class="bar">
   <div class="logo">
     <div class="m">H</div>
-    <div><b>Home Portal</b><small id="stat">Loading…</small></div>
+    <div class="name"><b>Home Portal</b><small id="stat">Loading…</small></div>
   </div>
 
   <form class="gsearch" action="https://www.google.com/search" method="get" target="_blank" rel="noopener" role="search">
@@ -44,7 +44,9 @@
     <button id="v-group" aria-pressed="false">By group</button>
   </div>
 
-  <button class="btn" id="add">＋ Add</button>
+  <button class="btn icon" id="add" aria-label="Add a link" title="Add a link">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M8 3.5v9M3.5 8h9"/></svg>
+  </button>
 
   <div class="menu-wrap">
     <button class="btn ghost icon" id="more" aria-label="More" aria-expanded="false">
