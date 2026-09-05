@@ -70,6 +70,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 /* Google box: same field styling as the portal's own search, so the top bar reads as
    one set of controls. The brand mark is what tells them apart. */
 .gsearch{
+  position:relative;
   flex:0 1 230px;max-width:230px;
   display:flex;align-items:center;gap:9px;padding:8px 11px;
   background:var(--sunk);border:1px solid transparent;border-radius:9px;
@@ -82,6 +83,25 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .gclear{flex:none;width:18px;height:18px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--faint);cursor:pointer}
 .gclear:hover{color:var(--ink)}
 .gclear[hidden]{display:none}
+
+/* Suggestions hang below the field and are allowed to be wider than it: the field is
+   230px, and Google's phrases are routinely longer than that. */
+.gsuggest{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:6;
+  min-width:100%;width:max-content;max-width:min(420px,70vw);
+  margin:0;padding:5px;list-style:none;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:10px;
+  box-shadow:var(--lift);
+  max-height:min(360px,60vh);overflow-y:auto;
+}
+.gsuggest[hidden]{display:none}
+.gsuggest li{
+  padding:7px 10px;border-radius:7px;font-size:13.5px;color:var(--ink);cursor:pointer;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.gsuggest li:hover,.gsuggest li[aria-selected="true"]{background:var(--sunk)}
+/* The part you have not typed yet is the suggestion proper; show it as the softer half. */
+.gsuggest li b{font-weight:400;color:var(--muted)}
 
 .find{position:relative;flex:0 1 190px;max-width:190px}
 .find input{width:100%;padding:8px 12px 8px 32px;font:inherit;font-size:13.5px;color:var(--ink);background:var(--sunk);border:1px solid transparent;border-radius:9px;outline:none;transition:.15s}

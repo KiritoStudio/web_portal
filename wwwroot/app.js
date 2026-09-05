@@ -536,13 +536,136 @@ gclear.addEventListener('click', () => {
 });
 
 // The clear button is out of the tab order (tabindex="-1") so that Tab goes straight
-// from here to the portal's own search. Escape is the keyboard equivalent of clicking it.
+// from here to the portal's own search. Escape is the keyboard equivalent of clicking it,
+// except while suggestions are open, where the first Escape just dismisses those.
 gq.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && gq.value) {
+  if (event.key !== 'Escape') return;
+  if (!suggestBox.hidden) return closeSuggestions();
+  if (gq.value) {
     gq.value = '';
     gclear.hidden = true;
   }
 });
+
+// ---------------------------------------------------------------- Google suggestions
+
+const suggestBox = $('gsuggest');
+let suggestions = [];
+let picked = -1;          // index into suggestions, -1 meaning "what was typed"
+let typedText = '';       // kept so arrowing back past the top restores it
+let debounce = null;
+let newest = 0;           // guards against a slow response landing after a newer one
+
+/**
+ * Google's suggest endpoint sends no CORS headers, so it cannot be fetched; it does
+ * answer JSONP, which is why this goes through a script tag. The request travels from
+ * the browser, not from the server — the portal's host cannot reach Google at all.
+ * @returns {Promise<string[]>} suggestions, or an empty list if anything goes wrong
+ */
+function askGoogle(query) {
+  return new Promise((resolve) => {
+    const name = '__sug' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const script = document.createElement('script');
+    const done = (list) => {
+      clearTimeout(timer);
+      delete window[name];
+      script.remove();
+      resolve(list);
+    };
+    const timer = setTimeout(() => done([]), 3000);
+    window[name] = (data) => done(Array.isArray(data && data[1]) ? data[1] : []);
+    script.onerror = () => done([]);
+    script.src = 'https://suggestqueries.google.com/complete/search?client=firefox&q='
+      + encodeURIComponent(query) + '&callback=' + name;
+    document.head.appendChild(script);
+  });
+}
+
+function closeSuggestions() {
+  suggestions = [];
+  picked = -1;
+  suggestBox.hidden = true;
+  suggestBox.replaceChildren();
+  gq.setAttribute('aria-expanded', 'false');
+}
+
+function drawSuggestions(typed) {
+  suggestBox.replaceChildren();
+  suggestions.forEach((text, i) => {
+    const li = document.createElement('li');
+    li.id = 'sug-' + i;
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', String(i === picked));
+    // Split off the part already typed so the rest can be shown as the softer half
+    if (text.toLowerCase().startsWith(typed.toLowerCase())) {
+      li.append(text.slice(0, typed.length));
+      const rest = document.createElement('b');
+      rest.textContent = text.slice(typed.length);
+      li.append(rest);
+    } else {
+      li.textContent = text;
+    }
+    // mousedown, not click: blur fires first on click and would close the list
+    li.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      gq.value = text;
+      closeSuggestions();
+      gq.closest('form').requestSubmit();
+    });
+    suggestBox.append(li);
+  });
+  suggestBox.hidden = suggestions.length === 0;
+  gq.setAttribute('aria-expanded', String(suggestions.length > 0));
+}
+
+function highlight(next) {
+  picked = next;
+  for (const [i, li] of [...suggestBox.children].entries()) {
+    li.setAttribute('aria-selected', String(i === picked));
+  }
+  if (picked >= 0) {
+    suggestBox.children[picked].scrollIntoView({ block: 'nearest' });
+    gq.setAttribute('aria-activedescendant', 'sug-' + picked);
+  } else {
+    gq.removeAttribute('aria-activedescendant');
+  }
+}
+
+gq.addEventListener('input', () => {
+  clearTimeout(debounce);
+  typedText = gq.value;
+  const typed = gq.value.trim();
+  if (!typed) return closeSuggestions();
+  debounce = setTimeout(async () => {
+    const token = ++newest;
+    const list = await askGoogle(typed);
+    if (token !== newest || gq.value.trim() !== typed) return;
+    suggestions = list.slice(0, 8);
+    picked = -1;
+    drawSuggestions(typed);
+  }, 150);
+});
+
+gq.addEventListener('keydown', (event) => {
+  if (suggestBox.hidden) return;
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    const step = event.key === 'ArrowDown' ? 1 : -1;
+    // Walking past either end returns to what was actually typed
+    const next = picked + step;
+    highlight(next < -1 ? suggestions.length - 1 : next >= suggestions.length ? -1 : next);
+    gq.value = picked >= 0 ? suggestions[picked] : typedText;
+  } else if (event.key === 'Enter' && picked >= 0 && !event.ctrlKey && !event.metaKey) {
+    // Left alone with a modifier: Ctrl+Enter is address completion, and it reads the field,
+    // which arrowing through the list has already filled in — the same as an address bar.
+    gq.value = suggestions[picked];
+    closeSuggestions();
+  } else if (event.key === 'Tab') {
+    closeSuggestions();
+  }
+});
+
+gq.addEventListener('blur', () => setTimeout(closeSuggestions, 120));
 
 // The cursor starts in the Google box, the way a search page behaves. Not on touch
 // devices though: autofocus there throws up the soft keyboard over half the screen

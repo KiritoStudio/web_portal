@@ -28,10 +28,12 @@
         <path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.3 30 2 24 2 15.4 2 7.9 7 4.3 14.2l7.3 5.7c1.8-5.2 6.6-9.1 12.4-9.1z"/>
       </svg>
     </span>
-    <input type="text" name="q" id="gq" placeholder="Search Google" aria-label="Search Google" autocomplete="off">
+    <input type="text" name="q" id="gq" placeholder="Search Google" aria-label="Search Google"
+           autocomplete="off" role="combobox" aria-expanded="false" aria-controls="gsuggest">
     <button type="button" class="gclear" id="gclear" aria-label="Clear" tabindex="-1" hidden>
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
     </button>
+    <ul class="gsuggest" id="gsuggest" role="listbox" aria-label="Search suggestions" hidden></ul>
   </form>
 
   <div class="find">
