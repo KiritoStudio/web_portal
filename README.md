@@ -1,10 +1,10 @@
-# Home Portal
+# MyPortal
 
 A single page that collects every web UI on the home network — router, NAS,
 Home Assistant, Proxmox, the printer — so nobody has to remember which box was
 on which port. No login: open it and click.
 
-![Home Portal, grouped view](docs/grouped.png)
+![MyPortal, grouped view](docs/grouped.png)
 
 ## What it does
 
@@ -19,7 +19,7 @@ on which port. No login: open it and click.
 
 Or drop the grouping and put everything on one screen, most-opened first:
 
-![Home Portal, flat view](docs/flat.png)
+![MyPortal, flat view](docs/flat.png)
 
 ## Running it
 

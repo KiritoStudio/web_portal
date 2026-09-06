@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs or updates Home Portal on the target machine.
+# Installs or updates MyPortal on the target machine.
 # Usage: copy the published directory and this script over, then sudo ./install.sh <publish dir>
 set -euo pipefail
 

@@ -433,7 +433,7 @@ public static class Program
 
         MapApi(app, db);
 
-        app.Logger.LogInformation("Home Portal on http://localhost:{Port}", port);
+        app.Logger.LogInformation("MyPortal on http://localhost:{Port}", port);
         await app.RunAsync();
     }
 

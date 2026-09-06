@@ -1,6 +1,6 @@
 [Unit]
-Description=Home Portal — LAN link dashboard
-Documentation=https://github.com/kirito/home-portal
+Description=MyPortal — LAN link dashboard
+Documentation=https://github.com/KiritoStudio/web_portal
 After=network-online.target
 Wants=network-online.target
 

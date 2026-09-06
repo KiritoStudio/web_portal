@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Home Portal front end.
+ * MyPortal front end.
  *
  * Ordering: most-opened first, ties going to the newer link. A new link has zero
  * clicks, so without that tiebreak it would sit at the bottom forever and never
