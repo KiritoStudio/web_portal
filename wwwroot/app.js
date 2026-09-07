@@ -100,10 +100,10 @@ function inPinnedOrder(list) {
 
 function cardHtml(site, index) {
   const tip = `${site.group ? site.group + ' · ' : ''}opened ${clicksOf(site.id)} times`;
-  // noreferrer as well as noopener: several LAN services (qBittorrent's WebUI among them)
-  // reject requests carrying a foreign Referer as cross-site, answering Unauthorized.
-  // It also keeps the portal's own address from leaking to whatever is being opened.
-  return `<a class="card" href="${esc(site.url)}" target="_blank" rel="noopener noreferrer"
+  // noreferrer even though the page also sets a no-referrer policy: several LAN services
+  // (qBittorrent's WebUI among them) answer Unauthorized to a request carrying a foreign
+  // Referer, and this states the requirement where the link itself is written.
+  return `<a class="card" href="${esc(site.url)}" rel="noreferrer"
     data-id="${site.id}" title="${esc(tip)}"
     style="${styleOf(site.group)}animation-delay:${Math.min(index * 18, 260)}ms">
     <span class="ico">${esc(site.name.slice(0, 1))}</span>
@@ -233,15 +233,19 @@ canvas.addEventListener('click', async (event) => {
     return;
   }
 
-  // The link opens in a new tab as usual; this just records the open
+  // The browser follows the link from here; this only records the open
   countClick(site);
 });
 
 function countClick(site) {
   state.clicks[site.id] = clicksOf(site.id) + 1;
-  api('POST', `/api/sites/${site.id}/click`).catch((err) => {
-    // NOTE: the link is already open. Interrupting someone over one lost count is worse
-    // than losing it, so this stays in the console.
+  const path = `/api/sites/${site.id}/click`;
+  // The page is about to navigate away, and a fetch in flight would be cancelled with it.
+  // sendBeacon exists for exactly this: the browser owns the request from here on.
+  if (navigator.sendBeacon && navigator.sendBeacon(path)) return;
+  api('POST', path).catch((err) => {
+    // NOTE: the link is already opening. Interrupting someone over one lost count is
+    // worse than losing it, so this stays in the console.
     console.error('Click count was not recorded:', err.message);
   });
 }
@@ -669,10 +673,9 @@ gq.addEventListener('keydown', (event) => {
 
 gq.addEventListener('blur', () => setTimeout(closeSuggestions, 120));
 
-// A search is done with once it has been sent, and the results open in another tab, so
-// leave this field empty for the next one. The clearing is deferred: the form data is
-// collected after the submit event, and emptying the field inline would search for
-// nothing at all.
+// Leave the field empty behind us: the page navigates to the results, and coming back
+// should not land on a spent query. The clearing is deferred: form data is collected
+// after the submit event, and emptying the field inline would search for nothing.
 gq.closest('form').addEventListener('submit', () => {
   setTimeout(() => {
     gq.value = '';
@@ -707,12 +710,10 @@ gq.addEventListener('keydown', (event) => {
   // Several words are a search phrase, not a hostname; leave those to plain Enter.
   if (!typed || /\s/.test(typed)) return;
   event.preventDefault();   // otherwise the form submits a search on top of this
-  window.open(asAddress(typed), '_blank', 'noopener,noreferrer');
-  // Spent, exactly like a submitted search. No deferral needed here: the address was
-  // read into `typed` before this line, and no form data is collected on this path.
   gq.value = '';
   gclear.hidden = true;
   closeSuggestions();
+  window.location.assign(asAddress(typed));
 });
 
 // Cmd+K / Ctrl+K jumps back here from anywhere on the page.
