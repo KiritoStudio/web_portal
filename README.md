@@ -16,6 +16,12 @@ on which port. No login: open it and click.
   created on save. Drag group headers to reorder, click the pencil to rename.
   Every card is coloured by its group, so grouping still reads in the flat view.
 - **Export / import** the whole config as JSON.
+- **Remembers what you open with Ctrl+Enter** in the Google box. The server fetches
+  each site's favicon and the icons line up under the top bar. Typing the start of one
+  shows the rest in grey: → takes it, Enter opens it. Those sites also head the
+  suggestion list, most-opened first.
+
+![Address completion in the Google box](docs/complete.png)
 
 Or drop the grouping and put everything on one screen, most-opened first:
 
@@ -50,6 +56,6 @@ up from `deploy/home-portal.env`.
 
 ## Database
 
-PostgreSQL. The two tables — `sites` and `groups` — are created at startup if
+PostgreSQL. The three tables — `sites`, `groups` and `jumps` — are created at startup if
 they are missing, so an empty database is all you need to point it at. There is
 no schema file to run and no migration step.
