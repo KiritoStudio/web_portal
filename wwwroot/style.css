@@ -105,6 +105,39 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .gsuggest li[aria-selected="true"]{background:var(--sunk)}
 /* The part you have not typed yet is the suggestion proper; show it as the softer half. */
 .gsuggest li b{font-weight:400;color:var(--muted)}
+/* A remembered site leads with its icon. */
+.gsuggest li .fav{display:inline-block;width:16px;height:16px;margin-right:8px;vertical-align:-3px}
+
+/* Inline completion, laid exactly over the input by app.js. The typed half is invisible so
+   only the rest shows, in placeholder grey: it is an offer, not text in the box yet. */
+.gghost{
+  position:absolute;top:0;bottom:0;display:flex;align-items:center;overflow:hidden;
+  pointer-events:none;white-space:pre;font-size:13.5px;
+}
+.gghost[hidden]{display:none}
+.gghost span{color:transparent}
+.gghost b{font-weight:400;color:var(--faint)}
+
+/* Sites opened with Ctrl+Enter, as a single row of their icons under the top bar. */
+.jumps{
+  position:relative;z-index:1;display:flex;gap:10px;overflow:hidden;
+  padding:18px max(20px, calc((100vw - 1200px) / 2)) 0;
+}
+.jumps[hidden]{display:none}
+.jump{position:relative;flex:none}
+.jump a{
+  width:40px;height:40px;display:grid;place-items:center;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);box-shadow:var(--rim);
+  transition:border-color .16s;
+}
+.jump a:hover{border-color:var(--line-2)}
+.jump img{width:20px;height:20px}
+.jump button{
+  position:absolute;top:-6px;right:-6px;width:16px;height:16px;display:none;place-items:center;padding:0;
+  border:1px solid var(--line-2);border-radius:50%;background:var(--surface-2);color:var(--muted);cursor:pointer;
+}
+.jump:hover button,.jump button:focus-visible{display:grid}
+.jump button:hover{color:var(--accent)}
 
 .find{position:relative;flex:0 1 190px;max-width:190px}
 .find input{width:100%;padding:8px 12px 8px 32px;font:inherit;font-size:13.5px;color:var(--ink);background:var(--sunk);border:1px solid transparent;border-radius:9px;outline:none;transition:.15s}
@@ -272,6 +305,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   .logo .name{display:block}   /* the fields moved off this row, so the name fits again */
   .gsearch,.find{order:3;flex:1 1 0;min-width:0;max-width:none}
   .canvas{padding:18px 16px 60px}
+  .jumps{padding:14px 16px 0}
 }
 
 /* Phone width: the first row is genuinely tight, so the wordmark goes again. */

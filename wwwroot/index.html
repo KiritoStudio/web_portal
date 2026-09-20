@@ -31,6 +31,7 @@
     </span>
     <input type="text" name="q" id="gq" placeholder="Search Google" aria-label="Search Google"
            autocomplete="off" role="combobox" aria-expanded="false" aria-controls="gsuggest">
+    <span class="gghost" id="gghost" aria-hidden="true" hidden><span></span><b></b></span>
     <button type="button" class="gclear" id="gclear" aria-label="Clear" tabindex="-1" hidden>
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
     </button>
@@ -61,6 +62,8 @@
     </div>
   </div>
 </header>
+
+<nav class="jumps" id="jumps" aria-label="Sites opened with Ctrl+Enter" hidden></nav>
 
 <main class="canvas" id="canvas"></main>
 

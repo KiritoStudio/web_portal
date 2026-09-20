@@ -358,11 +358,7 @@ public readonly record struct Validated(string Name, string Url, string? Group, 
 
 public static class Validator
 {
-    /// <summary>
-    /// Validates and normalises one link.
-    /// Only http/https gets through: these fields end up as an &lt;a href&gt;, so accepting
-    /// javascript: would be handing yourself an XSS hole.
-    /// </summary>
+    /// <summary>Validates and normalises one link.</summary>
     public static Validated Site(SiteInput input)
     {
         var name = (input.Name ?? "").Trim();
@@ -370,18 +366,31 @@ public static class Validator
         if (name.Length > Db.MaxName) return Fail($"Name is at most {Db.MaxName} characters");
 
         var url = (input.Url ?? "").Trim();
-        if (url.Length == 0) return Fail("Address cannot be empty");
-        if (url.Length > Db.MaxUrl) return Fail("Address is too long");
-
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed))
-            return Fail("Write the full address, like http://192.168.1.10:5000");
-        if (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps)
-            return Fail("Only http and https addresses are supported");
+        var urlError = UrlError(url);
+        if (urlError is not null) return Fail(urlError);
 
         var group = (input.Group ?? "").Trim();
         if (group.Length > Db.MaxName) return Fail($"Group name is at most {Db.MaxName} characters");
 
         return new Validated(name, url, group.Length == 0 ? null : group, null);
+    }
+
+    /// <summary>
+    /// Checks an already-trimmed address.
+    /// Only http/https gets through: addresses end up as an &lt;a href&gt;, so accepting
+    /// javascript: would be handing yourself an XSS hole.
+    /// </summary>
+    /// <returns>A sentence for the user, or null when the address is fine.</returns>
+    public static string? UrlError(string url)
+    {
+        if (url.Length == 0) return "Address cannot be empty";
+        if (url.Length > Db.MaxUrl) return "Address is too long";
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed))
+            return "Write the full address, like http://192.168.1.10:5000";
+        if (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps)
+            return "Only http and https addresses are supported";
+        return null;
     }
 
     private static Validated Fail(string message) => new("", "", null, message);
@@ -399,6 +408,8 @@ public static class Program
 
         await using var db = new Db(connectionString);
         await db.InitializeAsync();
+        await using var jumps = new JumpStore(connectionString);
+        await jumps.InitializeAsync();
 
         var builder = WebApplication.CreateBuilder(args);
         builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
@@ -432,6 +443,7 @@ public static class Program
         });
 
         MapApi(app, db);
+        app.MapJumps(jumps);
 
         app.Logger.LogInformation("MyPortal on http://localhost:{Port}", port);
         await app.RunAsync();

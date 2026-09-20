@@ -536,6 +536,7 @@ gq.addEventListener('input', () => { gclear.hidden = !gq.value; });
 gclear.addEventListener('click', () => {
   gq.value = '';
   gclear.hidden = true;
+  paintGhost();
   gq.focus();
 });
 
@@ -595,11 +596,21 @@ function closeSuggestions() {
 
 function drawSuggestions(typed) {
   suggestBox.replaceChildren();
-  suggestions.forEach((text, i) => {
+  suggestions.forEach(({ text, jump }, i) => {
     const li = document.createElement('li');
     li.id = 'sug-' + i;
     li.setAttribute('role', 'option');
     li.setAttribute('aria-selected', String(i === picked));
+    // A site whose icon never arrived keeps the empty slot, so the addresses still line up
+    if (jump) {
+      const fav = document.createElement(jump.hasIcon ? 'img' : 'span');
+      fav.className = 'fav';
+      if (jump.hasIcon) {
+        fav.src = iconUrl(jump);
+        fav.alt = '';
+      }
+      li.append(fav);
+    }
     // Split off the part already typed so the rest can be shown as the softer half
     if (text.toLowerCase().startsWith(typed.toLowerCase())) {
       li.append(text.slice(0, typed.length));
@@ -614,6 +625,7 @@ function drawSuggestions(typed) {
     // mousedown, not click: blur fires first on click and would close the list
     li.addEventListener('mousedown', (event) => {
       event.preventDefault();
+      if (jump) return openJump(jump.url);
       gq.value = text;
       closeSuggestions();
       gq.closest('form').requestSubmit();
@@ -642,11 +654,16 @@ gq.addEventListener('input', () => {
   typedText = gq.value;
   const typed = gq.value.trim();
   if (!typed) return closeSuggestions();
+  // Remembered sites show at once, above whatever Google words are still up; Google's
+  // answer for the new text replaces those words when it arrives.
+  suggestions = [...jumpItems(typed), ...suggestions.filter((s) => !s.jump)];
+  picked = -1;
+  drawSuggestions(typed);
   debounce = setTimeout(async () => {
     const token = ++newest;
     const list = await askGoogle(typed);
     if (token !== newest || gq.value.trim() !== typed) return;
-    suggestions = list.slice(0, 8);
+    suggestions = [...jumpItems(typed), ...list.slice(0, 8).map((text) => ({ text, jump: null }))];
     picked = -1;
     drawSuggestions(typed);
   }, 150);
@@ -660,11 +677,16 @@ gq.addEventListener('keydown', (event) => {
     // Walking past either end returns to what was actually typed
     const next = picked + step;
     highlight(next < -1 ? suggestions.length - 1 : next >= suggestions.length ? -1 : next);
-    gq.value = picked >= 0 ? suggestions[picked] : typedText;
+    gq.value = picked >= 0 ? suggestions[picked].text : typedText;
   } else if (event.key === 'Enter' && picked >= 0 && !event.ctrlKey && !event.metaKey) {
     // Left alone with a modifier: Ctrl+Enter is address completion, and it reads the field,
     // which arrowing through the list has already filled in — the same as an address bar.
-    gq.value = suggestions[picked];
+    const { text, jump } = suggestions[picked];
+    if (jump) {
+      event.preventDefault();
+      return openJump(jump.url);
+    }
+    gq.value = text;
     closeSuggestions();
   } else if (event.key === 'Tab') {
     closeSuggestions();
@@ -681,8 +703,143 @@ gq.closest('form').addEventListener('submit', () => {
     gq.value = '';
     gclear.hidden = true;
     closeSuggestions();
+    paintGhost();
   }, 0);
 });
+
+// ---------------------------------------------------------------- Jumps
+
+/**
+ * Sites opened from the Google box with Ctrl+Enter, most-opened first as the server sends
+ * them. They feed the icon row, the grey completion and the top of the suggestions.
+ */
+let jumps = [];
+const jumpRow = $('jumps');
+const ghost = $('gghost');
+let ghostJump = null;     // the site the grey completion is offering right now
+let acceptedJump = null;  // taken with →, so the Enter after it opens the site instead of searching
+
+function iconUrl(jump) {
+  return `/api/jumps/${encodeURIComponent(jump.id)}/icon`;
+}
+
+/** Counts one open. keepalive lets the request outlive the navigation that follows it. */
+function recordJump(url) {
+  fetch('/api/jumps', {
+    method: 'POST',
+    keepalive: true,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ url })
+  })
+    .then((res) => { if (!res.ok) console.error(`Jump was not recorded (${res.status})`); })
+    // NOTE: the site is already opening; one lost count is not worth interrupting that
+    .catch((e) => console.error('Jump was not recorded:', e.message));
+}
+
+function openJump(url) {
+  recordJump(url);
+  gq.value = '';
+  gclear.hidden = true;
+  closeSuggestions();
+  paintGhost();
+  window.location.assign(url);
+}
+
+/** Remembered sites whose address starts with what was typed, most-opened first. */
+function jumpsStartingWith(typed) {
+  // An address has no spaces, so a phrase completes to nothing
+  if (!typed || /\s/.test(typed)) return [];
+  const t = typed.toLowerCase();
+  return jumps.filter((j) => j.key.startsWith(t));
+}
+
+function jumpItems(typed) {
+  return jumpsStartingWith(typed).map((j) => ({ text: j.key, jump: j }));
+}
+
+/** Draws the grey rest of the most-opened match, or clears it when there is nothing to offer. */
+function paintGhost() {
+  const typed = gq.value;
+  const atEnd = document.activeElement === gq && gq.selectionStart === typed.length;
+  const top = atEnd ? jumpsStartingWith(typed)[0] : undefined;
+  // Once the text is wider than the box the input scrolls it, and the overlay can no longer line up
+  ghostJump = top && top.key.length > typed.length && gq.scrollWidth <= gq.clientWidth ? top : null;
+  if (!ghostJump) {
+    ghost.hidden = true;
+    return;
+  }
+  ghost.querySelector('span').textContent = typed;
+  ghost.querySelector('b').textContent = ghostJump.key.slice(typed.length);
+  ghost.style.left = gq.offsetLeft + 'px';
+  ghost.style.width = gq.clientWidth + 'px';
+  ghost.hidden = false;
+}
+
+gq.addEventListener('input', () => {
+  acceptedJump = null;
+  paintGhost();
+});
+// The caret can move without any input: arrows, Home/End, a click inside the text
+gq.addEventListener('keyup', paintGhost);
+gq.addEventListener('click', paintGhost);
+gq.addEventListener('blur', paintGhost);
+
+gq.addEventListener('keydown', (event) => {
+  const plain = !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey;
+  if (event.key === 'ArrowRight' && plain && ghostJump && gq.selectionStart === gq.value.length) {
+    event.preventDefault();
+    acceptedJump = ghostJump;
+    gq.value = ghostJump.key;
+    gclear.hidden = false;
+    closeSuggestions();
+    paintGhost();
+  } else if (event.key === 'Enter' && plain && acceptedJump && gq.value === acceptedJump.key) {
+    event.preventDefault();   // otherwise the form sends the address to Google as a search
+    openJump(acceptedJump.url);
+  }
+});
+
+function drawJumpRow() {
+  // The row is a row of icons: a site whose icon could not be fetched stays out of it,
+  // though it still completes in the box
+  const shown = jumps.filter((j) => j.hasIcon);
+  jumpRow.innerHTML = shown
+    .map(
+      (j) => `<span class="jump">
+        <a href="${esc(j.url)}" rel="noreferrer" data-id="${esc(j.id)}" title="${esc(`${j.key} · opened ${j.uses} times`)}"><img src="${iconUrl(j)}" alt="${esc(j.key)}" width="20" height="20"></a>
+        <button type="button" data-id="${esc(j.id)}" aria-label="Remove ${esc(j.key)}"><svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+      </span>`
+    )
+    .join('');
+  jumpRow.hidden = shown.length === 0;
+}
+
+jumpRow.addEventListener('click', async (event) => {
+  const target = event.target.closest('[data-id]');
+  if (!target) return;
+  const jump = jumps.find((j) => j.id === target.dataset.id);
+
+  // The browser follows the link from here; this only records the open
+  if (target.tagName === 'A') return recordJump(jump.url);
+
+  try {
+    await api('DELETE', `/api/jumps/${encodeURIComponent(jump.id)}`);
+  } catch (e) {
+    return showToast(`Could not remove: ${e.message}`, { bad: true });
+  }
+  jumps.splice(jumps.indexOf(jump), 1);
+  drawJumpRow();
+  showToast(`Removed ${jump.key}`);
+});
+
+async function loadJumps() {
+  try {
+    jumps = await api('GET', '/api/jumps');
+  } catch (e) {
+    return showToast(`Could not load recent sites: ${e.message}`, { bad: true });
+  }
+  drawJumpRow();
+}
 
 // The cursor starts in the Google box, the way a search page behaves. Not on touch
 // devices though: autofocus there throws up the soft keyboard over half the screen
@@ -710,10 +867,7 @@ gq.addEventListener('keydown', (event) => {
   // Several words are a search phrase, not a hostname; leave those to plain Enter.
   if (!typed || /\s/.test(typed)) return;
   event.preventDefault();   // otherwise the form submits a search on top of this
-  gq.value = '';
-  gclear.hidden = true;
-  closeSuggestions();
-  window.location.assign(asAddress(typed));
+  openJump(asAddress(typed));
 });
 
 // Cmd+K / Ctrl+K jumps back here from anywhere on the page.
@@ -786,3 +940,4 @@ async function boot() {
 }
 
 boot();
+loadJumps();
